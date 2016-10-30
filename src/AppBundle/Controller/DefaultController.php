@@ -114,7 +114,7 @@ class DefaultController extends FOSRestController
     		$image = $fileName;
     	}
     	if(!isset($image)) {
-    		$fileName = md5(uniqid()).'.'.$file->guessExtension();
+    		$fileName = md5(uniqid()).'.jpg';
     		
     		$image = $request->request->get('image');
     		$this->base64_to_jpeg($image,$this->getParameter('images_directory').'/'.$fileName);
