@@ -111,7 +111,8 @@ class DefaultController extends FOSRestController
     		$image = $fileName;
     	}
     	if(!isset($image)) {
-    		$image = $request->request->get('image');
+    		$image = $this->base64_to_jpeg($request->request->get('image'),'test.jpg');
+    		
     	}
     	$em = $this->getDoctrine()->getManager();
 	    $posting = new Posting();
@@ -126,6 +127,18 @@ class DefaultController extends FOSRestController
 	
     	return $posting;
     }
+    
+    function base64_to_jpeg($base64_string, $output_file) {
+    	$ifp = fopen($output_file, "wb");
+    
+    	$data = explode(',', $base64_string);
+    
+    	fwrite($ifp, base64_decode($data[1]));
+    	fclose($ifp);
+    
+    	return $output_file;
+    }
+    
     
     function getPointsFromCO2($co2) {
     	return ceil(-2+15*log($co2,exp(1)));
