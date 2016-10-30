@@ -193,7 +193,7 @@ class DefaultController extends FOSRestController
 	    ->setParameter('lastId', $user->getLastPostingSeen())
 	    ->setParameter('status', 'open')
 	    ->orderBy('p.id', 'ASC')
-	    ->getQuery()->getArrayResult();
+	    ->getQuery()->setMaxResults(5)->getResult();
 	    foreach($postings as $p) $this->enrichPosting($p);
 	     
 	    return array('postings' => $postings);
