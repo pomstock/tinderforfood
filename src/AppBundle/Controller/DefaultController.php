@@ -46,6 +46,11 @@ class DefaultController extends FOSRestController
     	$p->setRequests(
     			$em->getRepository('AppBundle:Request')->findByPostingId($p->getId())
     			);
+    	foreach($p->getRequests() as $r){
+    		$r->setBuyer(
+    			$em->getRepository('AppBundle:User')->findOneById($r->getBuyerId())
+    			);
+    	}    	
     	 
     }
     
@@ -66,7 +71,9 @@ class DefaultController extends FOSRestController
     	$em = $this->getDoctrine()->getManager();
     	$postings = $em->getRepository('AppBundle:Posting')
     	->findBy($this->filters($request, array('sellerId' => $userId)), null, 1);
-    	foreach($postings as $p) $this->enrichPosting($p);
+    	foreach($postings as $p) {
+    		$this->enrichPosting($p);
+    	}
     	return array(
     			'postings' => $postings,
     	);
