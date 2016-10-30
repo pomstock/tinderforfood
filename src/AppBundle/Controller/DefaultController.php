@@ -204,6 +204,15 @@ class DefaultController extends FOSRestController
     	return $user;
     }
     
+    public function getUserIgnoreAction(Request $r, User $user, Posting $p) {
+    	$em = $this->getDoctrine()->getManager();
+    	$user->setLastPostingSeen($p->getId());    
+    	$em->persist($user);
+    	$em->flush();
+    
+    	return $user;
+    }    
+    
     public function patchPostingAction(Request $r, Posting $posting) {
     	$em = $this->getDoctrine()->getManager();
     	$this->setFromRequest($r, $posting);
