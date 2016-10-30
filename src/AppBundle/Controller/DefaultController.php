@@ -218,7 +218,7 @@ class DefaultController extends FOSRestController
     	->createQueryBuilder('p')
 	    //->where('p.id > :lastId')
 	    ->andWhere('p.status = :status')
-	    ->setParameter('lastId', $user->getLastPostingSeen())
+	    //->setParameter('lastId', $user->getLastPostingSeen())
 	    ->setParameter('status', 'open')
 	    ->orderBy('p.createdAt', 'DESC')
 	    ->getQuery()
