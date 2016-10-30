@@ -234,7 +234,6 @@ class DefaultController extends FOSRestController
 	    ->setParameter('userId', $user->getId())
 	    ->orderBy('p.id', 'ASC')
 	    ->getQuery()
-    	->setMaxResults(5)
     	->getResult();
 	    foreach($postings as $p) $this->enrichPosting($p);
 	     
