@@ -2,7 +2,6 @@
 
 namespace AppBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use FOS\RestBundle\Controller\FOSRestController;
@@ -10,6 +9,7 @@ use FOS\RestBundle\Controller\Annotations;
 use FOS\RestBundle\View\View;
 use AppBundle\Entity\Posting;
 use AppBundle\Entity\Request as PostingRequest;
+use AppBundle\Entity\User;
 
 /**
  * Collection get action
@@ -36,27 +36,31 @@ class DefaultController extends FOSRestController
     	);
     }
     
-    public function getUserPostingsAction(Request $request, $userID) {
+    public function getUserPostingsAction(Request $request, $userId) {
     	$em = $this->getDoctrine()->getManager();
-    	$entities = $em->getRepository('AppBundle:Posting')->findBy($this->filters($request, array('sellerId' => $userID)));
-    	
+    	$postings = $em->getRepository('AppBundle:Posting')->findBy($this->filters($request, array('sellerId' => $userId)));
+    	foreach($postings as $p) {
+    		$p->setRequests(
+    				$em->getRepository('AppBundle:Request')->findByPostingId($p->getId())
+    		);
+    	}
     	return array(
-    			'postings' => $entities,
+    			'postings' => $postings,
     	);
     }
     
-    public function getPostingRequestsAction(Request $request, $postingID) {
+    public function getPostingRequestsAction(Request $request, $postingId) {
     	$em = $this->getDoctrine()->getManager();
-    	$entities = $em->getRepository('AppBundle:Request')->findBy($this->filters($request, array('postingId' => $postingID)));
+    	$entities = $em->getRepository('AppBundle:Request')->findBy($this->filters($request, array('postingId' => $postingId)));
     	 
     	return array(
     			'requests' => $entities,
     	);
     }
     
-    public function getUserRequestsAction(Request $request, $userID ) {    	
+    public function getUserRequestsAction(Request $request, $userId ) {    	
     	$em = $this->getDoctrine()->getManager();
-    	$entities = $em->getRepository('AppBundle:Request')->findBy($this->filters($request, array('buyerId' => $userID)));
+    	$entities = $em->getRepository('AppBundle:Request')->findBy($this->filters($request, array('buyerId' => $userId)));
     	 
     	return array(
     			'requests' => $entities,
@@ -80,31 +84,119 @@ class DefaultController extends FOSRestController
     	}
     	$em = $this->getDoctrine()->getManager();
 	    $posting = new Posting();
-	    $posting->setDescription($request->request->get('description'));
+	    $this->setFromRequest($request, $posting);
+	    $co2 = mt_rand(100,1000);
+	    $posting->setCo2Saved($co2);
+	    $posting->setPoints($this->getPointsFromCO2($co2));
 	    $posting->setImage($image);
-	    $posting->setPrice($request->request->get('price'));
-	    $posting->setSellerId($request->request->get('sellerId'));
-	    $posting->setStatus($request->request->get('status'));
-	    $posting->setTitle($request->request->get('title'));
 	    
 	    $em->persist($posting);
 	    $em->flush();
 	
-    	return array($posting);
+    	return $posting;
     }
     
-    public function postRequestsAction(Request $r) {
+    function getPointsFromCO2($co2) {
+    	return ceil(-2+15*log($co2,exp(1)));
+    }
+    
+    function setFromRequest(Request $r, $entity) {
+    	foreach ($r->request->all() as $k => $v) {
+    		$func = 'set'.ucfirst($k);
+    		if(method_exists($entity,$func)) $entity->{$func}($v);
+    	}
+    }
+    
+    public function postPostingRequestsAction(Request $r, Posting $posting) {
     	$em = $this->getDoctrine()->getManager();
     	$request = new PostingRequest();
-    	$request->setPostingId($r->request->get('postingId'));
-    	$request->setText($r->request->get('text'));
-    	$request->setBuyerId($r->request->get('buyerId'));
-    	 
+    	$this->setFromRequest($r, $request);
+    	$request->setCo2Saved($posting->getCo2Saved());
+    	$request->setPoints($posting->getPoints());
     	$em->persist($request);
     	$em->flush();
     
-    	return array($request);
+    	return $request;
     }    
     
+    public function postUsersAction(Request $r) {
+    	$em = $this->getDoctrine()->getManager();
+    	$user = new User();
+    	$this->setFromRequest($r, $user);
+    	$em->persist($user);
+    	$em->flush();
+    
+    	return $user;
+    }
+    
+    
+    public function patchRequestAction(Request $r, PostingRequest $request) {
+    	$em = $this->getDoctrine()->getManager();
+    	 
+    	$this->setFromRequest($r, $request);
+    
+    	$em->persist($request);
+    	$em->flush();
+    
+    	return $request;
+    }
+    
+    public function patchUserAction(Request $r, User $user) {
+    	$em = $this->getDoctrine()->getManager();
+    
+    	$this->setFromRequest($r, $user);
+    
+    	$em->persist($user);
+    	$em->flush();
+    
+    	return $user;
+    }
+    
+    public function patchPostingAction(Request $r, Posting $posting) {
+    	$em = $this->getDoctrine()->getManager();
+    	$this->setFromRequest($r, $posting);
+    	$em->persist($posting);
+    	$em->flush();
+    
+    	return $posting;
+    }
+    
+    public function nextUserPostingsAction(Request $r, User $user) {
+    	$em = $this->getDoctrine()->getManager();
+    	$postings = $em->getRepository('AppBundle:Posting')
+    	->createQueryBuilder('p')
+	    ->where('p.id > :lastId')
+	    ->andWhere('p.status = :status')
+	    ->setParameter('lastId', $user->getLastPostingSeen())
+	    ->setParameter('status', 'open')
+	    ->orderBy('p.id', 'ASC')
+	    ->getQuery()->getArrayResult();
+    	
+	    return array('postings' => $postings);
+    }
+    
+    public function getUserAction(User $user) {
+    	$em = $this->getDoctrine()->getManager();
+    	$postings = $em->getRepository('AppBundle:Posting')->findBy(array('sellerId' => $user->getId(), 'status' => 'closed'));
+    	$requests = $em->getRepository('AppBundle:Request')->findBy(array('buyerId' => $user->getId(), 'status' => 'won'));
+    	 
+    	$sumPoints = function($carry, $p){ 
+    		$carry += $p->getPoints();
+    		return $carry;
+    	};
+    	
+    	$sumCO2 = function($carry, $p){
+    		$carry += $p->getCo2Saved();
+    		return $carry;
+    	};
+    	$points = array_reduce($postings, $sumPoints, 0);
+    	$points = array_reduce($requests, $sumPoints, $points);
+    	$user->setPoints($points);
+    	
+    	$co2_saved = array_reduce($postings, $sumCO2, 0);
+    	$co2_saved = array_reduce($requests, $sumCO2, $co2_saved);
+    	$user->setCo2Saved($co2_saved);    	
+    	return $user;
+    }
     
 }

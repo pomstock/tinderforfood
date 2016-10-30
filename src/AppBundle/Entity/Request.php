@@ -72,7 +72,21 @@ class Request
      * @ORM\Column(name="seller_confirmed_at", type="datetime", nullable=true)
      */
     private $sellerConfirmedAt;
+    
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="points", type="integer")
+     */
+    private $points;    
 
+    /**
+     * @var float
+     *
+     * @ORM\Column(name="co2_saved", type="float")
+     */
+    private $co2_saved;
+    
     /**
      * @var string
      *
@@ -289,5 +303,53 @@ class Request
     public function getUpdatedAt()
     {
         return $this->updatedAt;
+    }
+
+    /**
+     * Set points
+     *
+     * @param integer $points
+     *
+     * @return Request
+     */
+    public function setPoints($points)
+    {
+        $this->points = $points;
+
+        return $this;
+    }
+
+    /**
+     * Get points
+     *
+     * @return integer
+     */
+    public function getPoints()
+    {
+        return $this->points;
+    }
+
+    /**
+     * Set co2Saved
+     *
+     * @param float $co2Saved
+     *
+     * @return Request
+     */
+    public function setCo2Saved($co2Saved)
+    {
+        $this->co2_saved = $co2Saved;
+
+        return $this;
+    }
+
+    /**
+     * Get co2Saved
+     *
+     * @return float
+     */
+    public function getCo2Saved()
+    {
+        return $this->co2_saved;
     }
 }

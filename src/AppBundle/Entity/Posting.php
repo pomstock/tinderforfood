@@ -3,6 +3,8 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * Posting
@@ -23,9 +25,10 @@ class Posting
     private $id;
 
     /**
-     * @var string
+     * @var File
      *
      * @ORM\Column(name="image", type="string", length=255)
+     * @Assert\File(mimeTypes={ "image/jpg" }) 
      */
     private $image;
 
@@ -63,6 +66,20 @@ class Posting
      * @ORM\Column(name="seller_id", type="integer")
      */
     private $sellerId;
+    
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="points", type="integer")
+     */
+    private $points;    
+    
+    /**
+     * @var float
+     *
+     * @ORM\Column(name="co2_saved", type="float")
+     */
+    private $co2_saved;    
 
     /**
      * @var string
@@ -79,10 +96,13 @@ class Posting
     private $status;
     
     /* 
-     * @ORM\OneToMany(targetEntity="Request", mappedBy="posting_id")
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\Request", mappedBy="posting_id")
      */
     private $requests;
     
+    public function __construct() {
+    	$this->requests = new ArrayCollection();
+    }
     /**
      *  @ORM\PrePersist
      */
@@ -292,4 +312,70 @@ class Posting
     {
         return $this->status;
     }
+
+    /**
+     * Set points
+     *
+     * @param integer $points
+     *
+     * @return Posting
+     */
+    public function setPoints($points)
+    {
+        $this->points = $points;
+
+        return $this;
+    }
+
+    /**
+     * Get points
+     *
+     * @return integer
+     */
+    public function getPoints()
+    {
+        return $this->points;
+    }
+
+    /**
+     * Set co2Saved
+     *
+     * @param float $co2Saved
+     *
+     * @return Posting
+     */
+    public function setCo2Saved($co2Saved)
+    {
+        $this->co2_saved = $co2Saved;
+
+        return $this;
+    }
+
+    /**
+     * Get co2Saved
+     *
+     * @return float
+     */
+    public function getCo2Saved()
+    {
+        return $this->co2_saved;
+    }
+    
+    /**
+     *
+     * @return ArrayCollection
+     */
+    public function getRequests()
+    {
+    	return $this->requests;
+    }
+    
+    /**
+     *
+     * @return Posting
+     */
+    public function setRequests($requests)
+    {
+    	$this->requests = $requests;
+    }    
 }
