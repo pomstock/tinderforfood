@@ -115,7 +115,8 @@ class DefaultController extends FOSRestController
     	}
     	if(!isset($image)) {
     		$image = $request->request->get('image');
-    		$image = $this->base64_to_jpeg($image,$this->getParameter('images_directory').'test.jpg');
+    		$this->base64_to_jpeg($image,$this->getParameter('images_directory').'/test.jpg');
+    		$image = 'http://foodhack.bonnejournee.ch/web/uploads/images/test.jpg';
     		$logger->info($image);
     		
     		// $image = $this->base64_to_jpeg($image,'test.jpg');
