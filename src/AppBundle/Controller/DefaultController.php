@@ -101,7 +101,7 @@ class DefaultController extends FOSRestController
     
     public function postPostingsAction(Request $request) {    
     	$file = $request->files->get('image');
-    	\error_log(print_r($request->request->all(), true));
+    	return $request->request->all();
     	if($file) {
     		$fileName = md5(uniqid()).'.'.$file->guessExtension();
     		
@@ -113,7 +113,7 @@ class DefaultController extends FOSRestController
     		$image = $fileName;
     	}
     	if(!isset($image)) {
-    		$image = $this->base64_to_jpeg($request->request->get('image'),'test.jpg');
+    		$image = $request->request->get('image');//$this->base64_to_jpeg($request->request->get('image'),'test.jpg');
     		
     	}
     	$em = $this->getDoctrine()->getManager();
