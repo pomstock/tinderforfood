@@ -162,6 +162,7 @@ class DefaultController extends FOSRestController
     	$em = $this->getDoctrine()->getManager();
     	$request = new PostingRequest();
     	$this->setFromRequest($r, $request);
+    	$request->setPostingId($posting->getId());
     	$request->setCo2Saved($posting->getCo2Saved());
     	$request->setPoints($posting->getPoints());
     	$em->persist($request);

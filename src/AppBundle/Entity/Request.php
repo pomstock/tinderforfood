@@ -120,6 +120,8 @@ class Request
     {
     	$this->createdAt = new \DateTime();
     	$this->status = 'pending';
+    	$this->text = '';
+    	 
     }
     
 
