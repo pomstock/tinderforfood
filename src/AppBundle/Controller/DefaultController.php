@@ -200,6 +200,7 @@ class DefaultController extends FOSRestController
     }
     
     function enrichUser($user) {
+    	if(!$user) return;
     	$em = $this->getDoctrine()->getManager();
     	$postings = $em->getRepository('AppBundle:Posting')->findBy(array('sellerId' => $user->getId(), 'status' => 'closed'));
     	$requests = $em->getRepository('AppBundle:Request')->findBy(array('buyerId' => $user->getId(), 'status' => 'won'));
