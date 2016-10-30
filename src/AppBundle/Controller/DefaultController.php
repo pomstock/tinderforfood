@@ -102,6 +102,8 @@ class DefaultController extends FOSRestController
     public function postPostingsAction(Request $request) {    
     	$file = $request->files->get('image');
     	//return $request->request->all();
+    	$logger = $this->get('logger');
+    	$logger->info(print_r($request->request->all(), true));    	    	 
     	if($file) {
     		$fileName = md5(uniqid()).'.'.$file->guessExtension();
     		
@@ -126,7 +128,8 @@ class DefaultController extends FOSRestController
 	    
 	    $em->persist($posting);
 	    $em->flush();
-	
+	    $logger->info(print_r($posting, true));
+	     
     	return $posting;
     }
     
