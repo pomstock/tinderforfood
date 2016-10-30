@@ -29,21 +29,43 @@ class DefaultController extends FOSRestController
 	}
     public function getPostingsAction(Request $request) {
     	$em = $this->getDoctrine()->getManager();
-    	$entities = $em->getRepository('AppBundle:Posting')->findBy($this->filters($request));
-    	 
+    	$postings = $em->getRepository('AppBundle:Posting')->findBy($this->filters($request));
+    	foreach($postings as $p) $this->enrichPosting($p);
     	return array(
-    			'postings' => $entities,
+    			'postings' => $postings,
     	);
     }
+    
+    function enrichPosting($p) {
+    	$em = $this->getDoctrine()->getManager();
+    	 
+    	$p->setSeller(
+    			$em->getRepository('AppBundle:User')->findOneById($p->getSellerId())
+    			);
+    	$this->enrichUser($p->getSeller());
+    	$p->setRequests(
+    			$em->getRepository('AppBundle:Request')->findByPostingId($p->getId())
+    			);
+    	 
+    }
+    
+    function enrichRequest($r) {
+    	$em = $this->getDoctrine()->getManager();
+    
+    	$r->setBuyer(
+    			$em->getRepository('AppBundle:User')->findOneById($r->getBuyerId())
+    			);
+    	$this->enrichUser($r->getBuyer());    	
+    	$r->setPosting(
+    			$em->getRepository('AppBundle:Posting')->findOneById($r->getPostingId())
+    			);
+    
+    }    
     
     public function getUserPostingsAction(Request $request, $userId) {
     	$em = $this->getDoctrine()->getManager();
     	$postings = $em->getRepository('AppBundle:Posting')->findBy($this->filters($request, array('sellerId' => $userId)));
-    	foreach($postings as $p) {
-    		$p->setRequests(
-    				$em->getRepository('AppBundle:Request')->findByPostingId($p->getId())
-    		);
-    	}
+    	foreach($postings as $p) $this->enrichPosting($p);
     	return array(
     			'postings' => $postings,
     	);
@@ -51,19 +73,20 @@ class DefaultController extends FOSRestController
     
     public function getPostingRequestsAction(Request $request, $postingId) {
     	$em = $this->getDoctrine()->getManager();
-    	$entities = $em->getRepository('AppBundle:Request')->findBy($this->filters($request, array('postingId' => $postingId)));
-    	 
+    	$requests = $em->getRepository('AppBundle:Request')->findBy($this->filters($request, array('postingId' => $postingId)));
+    	foreach($requests as $r) $this->enrichRequest($r);
     	return array(
-    			'requests' => $entities,
+    			'requests' => $requests,
     	);
     }
     
     public function getUserRequestsAction(Request $request, $userId ) {    	
     	$em = $this->getDoctrine()->getManager();
-    	$entities = $em->getRepository('AppBundle:Request')->findBy($this->filters($request, array('buyerId' => $userId)));
+    	$requests = $em->getRepository('AppBundle:Request')->findBy($this->filters($request, array('buyerId' => $userId)));
+    	foreach($requests as $r) $this->enrichRequest($r);
     	 
     	return array(
-    			'requests' => $entities,
+    			'requests' => $requests,
     	);
     }
     
@@ -171,20 +194,21 @@ class DefaultController extends FOSRestController
 	    ->setParameter('status', 'open')
 	    ->orderBy('p.id', 'ASC')
 	    ->getQuery()->getArrayResult();
-    	
+	    foreach($postings as $p) $this->enrichPosting($p);
+	     
 	    return array('postings' => $postings);
     }
     
-    public function getUserAction(User $user) {
+    function enrichUser($user) {
     	$em = $this->getDoctrine()->getManager();
     	$postings = $em->getRepository('AppBundle:Posting')->findBy(array('sellerId' => $user->getId(), 'status' => 'closed'));
     	$requests = $em->getRepository('AppBundle:Request')->findBy(array('buyerId' => $user->getId(), 'status' => 'won'));
-    	 
-    	$sumPoints = function($carry, $p){ 
+    	
+    	$sumPoints = function($carry, $p){
     		$carry += $p->getPoints();
     		return $carry;
     	};
-    	
+    	 
     	$sumCO2 = function($carry, $p){
     		$carry += $p->getCo2Saved();
     		return $carry;
@@ -192,10 +216,14 @@ class DefaultController extends FOSRestController
     	$points = array_reduce($postings, $sumPoints, 0);
     	$points = array_reduce($requests, $sumPoints, $points);
     	$user->setPoints($points);
-    	
+    	 
     	$co2_saved = array_reduce($postings, $sumCO2, 0);
     	$co2_saved = array_reduce($requests, $sumCO2, $co2_saved);
-    	$user->setCo2Saved($co2_saved);    	
+    	$user->setCo2Saved($co2_saved);
+    }
+    
+    public function getUserAction(User $user) {
+		$this->enrichUser($user);
     	return $user;
     }
     

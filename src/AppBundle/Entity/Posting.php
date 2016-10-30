@@ -100,6 +100,15 @@ class Posting
      */
     private $requests;
     
+    private $seller;
+    public function getSeller() {
+    	return $this->seller;
+    }
+    public function setSeller($seller) {
+    	$this->seller = $seller;
+    	return $this;
+    }    
+    
     public function __construct() {
     	$this->requests = new ArrayCollection();
     }

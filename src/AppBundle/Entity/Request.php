@@ -93,6 +93,26 @@ class Request
      * @ORM\Column(name="text", type="text")
      */
     private $text;
+    
+    
+    private $buyer;
+    public function getBuyer() {
+    	return $this->buyer;
+    }
+    public function setBuyer($buyer) {
+    	$this->buyer = $buyer;
+    	return $this;
+    }
+    
+    private $posting;
+    public function getPosting() {
+    	return $this->posting;
+    }
+    public function setPosting($posting) {
+    	$this->posting = $posting;
+    	return $this;
+    }
+    
     /**
      *  @ORM\PrePersist
      */
