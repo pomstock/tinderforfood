@@ -111,6 +111,7 @@ class Posting
     
     public function __construct() {
     	$this->requests = new ArrayCollection();
+    	$this->price = "";
     }
     /**
      *  @ORM\PrePersist
