@@ -10,7 +10,6 @@ use FOS\RestBundle\View\View;
 use AppBundle\Entity\Posting;
 use AppBundle\Entity\Request as PostingRequest;
 use AppBundle\Entity\User;
-use function Monolog\Handler\error_log;
 
 /**
  * Collection get action
@@ -217,11 +216,11 @@ class DefaultController extends FOSRestController
     	$em = $this->getDoctrine()->getManager();
     	$postings = $em->getRepository('AppBundle:Posting')
     	->createQueryBuilder('p')
-	    ->where('p.id > :lastId')
+	    //->where('p.id > :lastId')
 	    ->andWhere('p.status = :status')
 	    ->setParameter('lastId', $user->getLastPostingSeen())
 	    ->setParameter('status', 'open')
-	    ->orderBy('p.id', 'ASC')
+	    ->orderBy('p.createdAt', 'DESC')
 	    ->getQuery()
     	->setMaxResults(5)
     	->getResult();
