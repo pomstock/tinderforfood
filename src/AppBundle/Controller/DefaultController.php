@@ -64,7 +64,8 @@ class DefaultController extends FOSRestController
     
     public function getUserPostingsAction(Request $request, $userId) {
     	$em = $this->getDoctrine()->getManager();
-    	$postings = $em->getRepository('AppBundle:Posting')->findBy($this->filters($request, array('sellerId' => $userId)));
+    	$postings = $em->getRepository('AppBundle:Posting')
+    	->findBy($this->filters($request, array('sellerId' => $userId)), null, 1);
     	foreach($postings as $p) $this->enrichPosting($p);
     	return array(
     			'postings' => $postings,
@@ -193,7 +194,9 @@ class DefaultController extends FOSRestController
 	    ->setParameter('lastId', $user->getLastPostingSeen())
 	    ->setParameter('status', 'open')
 	    ->orderBy('p.id', 'ASC')
-	    ->getQuery()->setMaxResults(5)->getResult();
+	    ->getQuery()
+    	->setMaxResults(5)
+    	->getResult();
 	    foreach($postings as $p) $this->enrichPosting($p);
 	     
 	    return array('postings' => $postings);
