@@ -71,7 +71,7 @@ class DefaultController extends FOSRestController
     public function getUserPostingsAction(Request $request, $userId) {
     	$em = $this->getDoctrine()->getManager();
     	$postings = $em->getRepository('AppBundle:Posting')
-    	->findBy($this->filters($request, array('sellerId' => $userId)), null, 1);
+    	->findBy($this->filters($request, array('sellerId' => $userId)), array('createdAt' => 'DESC'), 1);
     	foreach($postings as $p) {
     		$this->enrichPosting($p);
     	}
@@ -103,7 +103,6 @@ class DefaultController extends FOSRestController
     	$file = $request->files->get('image');
     	//return $request->request->all();
     	$logger = $this->get('logger');
-    	$logger->info(print_r($request->request->all(), true));    	    	 
     	if($file) {
     		$fileName = md5(uniqid()).'.'.$file->guessExtension();
     		
@@ -116,6 +115,8 @@ class DefaultController extends FOSRestController
     	}
     	if(!isset($image)) {
     		$image = $request->request->get('image');
+    		$logger->info($this->base64_to_jpeg($image,'test.jpg'));
+    		
     		// $image = $this->base64_to_jpeg($image,'test.jpg');
     	}
     	$em = $this->getDoctrine()->getManager();
@@ -127,9 +128,7 @@ class DefaultController extends FOSRestController
 	    $posting->setImage($image);
 	    
 	    $em->persist($posting);
-	    $em->flush();
-	    $logger->info(print_r($posting, true));
-	     
+	    $em->flush();	     
     	return $posting;
     }
     
