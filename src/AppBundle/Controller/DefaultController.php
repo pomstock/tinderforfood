@@ -10,6 +10,7 @@ use FOS\RestBundle\View\View;
 use AppBundle\Entity\Posting;
 use AppBundle\Entity\Request as PostingRequest;
 use AppBundle\Entity\User;
+use function Monolog\Handler\error_log;
 
 /**
  * Collection get action
@@ -100,6 +101,7 @@ class DefaultController extends FOSRestController
     
     public function postPostingsAction(Request $request) {    
     	$file = $request->files->get('image');
+    	error_log(print_r($request->request->all(), true));
     	if($file) {
     		$fileName = md5(uniqid()).'.'.$file->guessExtension();
     		
