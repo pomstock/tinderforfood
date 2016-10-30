@@ -101,7 +101,7 @@ class DefaultController extends FOSRestController
     
     public function postPostingsAction(Request $request) {    
     	$file = $request->files->get('image');
-    	error_log(print_r($request->request->all(), true));
+    	\error_log(print_r($request->request->all(), true));
     	if($file) {
     		$fileName = md5(uniqid()).'.'.$file->guessExtension();
     		
