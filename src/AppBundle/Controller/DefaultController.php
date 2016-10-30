@@ -216,11 +216,13 @@ class DefaultController extends FOSRestController
     	$em = $this->getDoctrine()->getManager();
     	$postings = $em->getRepository('AppBundle:Posting')
     	->createQueryBuilder('p')
-	    //->where('p.id > :lastId')
+	    ->where('p.id > :lastId')
 	    ->andWhere('p.status = :status')
-	    //->setParameter('lastId', $user->getLastPostingSeen())
+	    ->andWhere('p.sellerId != :userId')
+	    ->setParameter('lastId', $user->getLastPostingSeen())
 	    ->setParameter('status', 'open')
-	    ->orderBy('p.createdAt', 'DESC')
+	    ->setParameter('userId', $user->getId())
+	    ->orderBy('p.id', 'ASC')
 	    ->getQuery()
     	->setMaxResults(5)
     	->getResult();
